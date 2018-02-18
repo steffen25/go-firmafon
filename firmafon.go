@@ -24,6 +24,9 @@ type Client struct {
 	BaseURL     *url.URL
 
 	common service
+
+	// Services used for talking to different parts of the Firmafon API
+	Employees *EmployeesService
 }
 
 type service struct {
@@ -55,6 +58,7 @@ func NewClient(token string) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 	c := &Client{client: httpClient, BaseURL: baseURL, AccessToken: token}
 	c.common.client = c
+	c.Employees = (*EmployeesService)(&c.common)
 
 	return c
 }
