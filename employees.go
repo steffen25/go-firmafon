@@ -8,21 +8,23 @@ import (
 type EmployeesService service
 
 type Employee struct {
-	Admin            bool        `json:"admin"`
-	CloakReception   interface{} `json:"cloak_reception"`
-	CompanyID        int         `json:"company_id"`
-	DndTimeoutAt     time.Time   `json:"dnd_timeout_at"`
-	DoNotDisturb     bool        `json:"do_not_disturb"`
-	EmployeeGroupIds []int       `json:"employee_group_ids"`
-	Features         []string    `json:"features"`
-	ID               int         `json:"id"`
-	LivePresence     string      `json:"live_presence"`
-	Name             string      `json:"name"`
-	Number           string      `json:"number"`
-	SpeedDial        struct {
-		Digit int `json:"digit"`
-	} `json:"speed_dial"`
+	Admin            bool        `json:"admin,omitempty"`
+	CloakReception   interface{} `json:"cloak_reception,omitempty"`
+	CompanyID        int         `json:"company_id,omitempty"`
+	DndTimeoutAt     *time.Time   `json:"dnd_timeout_at,omitempty"`
+	DoNotDisturb     bool        `json:"do_not_disturb,omitempty"`
+	EmployeeGroupIds []int       `json:"employee_group_ids,omitempty"`
+	Features         []string    `json:"features,omitempty"`
+	ID               int         `json:"id,omitempty"`
+	LivePresence     string      `json:"live_presence,omitempty"`
+	Name             string      `json:"name,omitempty"`
+	Number           string      `json:"number,omitempty"`
+	SpeedDial        *SpeedDial	 `json:"speed_dial,omitempty"`
 }
+
+type SpeedDial struct {
+	Digit int `json:"digit,omitempty"`
+} 
 
 type firmafonEmployees struct {
 	Employees []*Employee `json:"employees"`

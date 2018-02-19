@@ -48,7 +48,7 @@ type AuthError ErrorResponse
 func (r *AuthError) Error() string { return (*ErrorResponse)(r).Error() }
 
 func (r *ErrorResponse) Error() string {
-	return fmt.Sprintf("%v %v: %d %v %+v",
+	return fmt.Sprintf("%v %v: %d %v",
 		r.Response.Request.Method, sanitizeURL(r.Response.Request.URL),
 		r.Response.StatusCode, r.Message)
 }
