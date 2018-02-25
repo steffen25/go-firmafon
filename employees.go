@@ -11,7 +11,7 @@ type Employee struct {
 	Admin            bool        `json:"admin,omitempty"`
 	CloakReception   interface{} `json:"cloak_reception,omitempty"`
 	CompanyID        int         `json:"company_id,omitempty"`
-	DndTimeoutAt     *time.Time   `json:"dnd_timeout_at,omitempty"`
+	DndTimeoutAt     *time.Time  `json:"dnd_timeout_at,omitempty"`
 	DoNotDisturb     bool        `json:"do_not_disturb,omitempty"`
 	EmployeeGroupIds []int       `json:"employee_group_ids,omitempty"`
 	Features         []string    `json:"features,omitempty"`
@@ -19,12 +19,12 @@ type Employee struct {
 	LivePresence     string      `json:"live_presence,omitempty"`
 	Name             string      `json:"name,omitempty"`
 	Number           string      `json:"number,omitempty"`
-	SpeedDial        *SpeedDial	 `json:"speed_dial,omitempty"`
+	SpeedDial        *SpeedDial  `json:"speed_dial,omitempty"`
 }
 
 type SpeedDial struct {
 	Digit int `json:"digit,omitempty"`
-} 
+}
 
 type firmafonEmployees struct {
 	Employees []*Employee `json:"employees"`

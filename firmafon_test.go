@@ -1,22 +1,22 @@
 package firmafon
 
 import (
-	"net/http"
 	"fmt"
-	"os"
-	"net/http/httptest"
-	"testing"
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
+	"os"
+	"testing"
 )
 
 const (
 	baseURLPath = "/api/v2"
 )
 
-func setup() (c *Client, mux *http.ServeMux, serverURL string, teardown func())  {
+func setup() (c *Client, mux *http.ServeMux, serverURL string, teardown func()) {
 	mux = http.NewServeMux()
-	
+
 	apiHandler := http.NewServeMux()
 	apiHandler.Handle(baseURLPath+"/", http.StripPrefix(baseURLPath, mux))
 	apiHandler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +46,7 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
-func TestNewRequest(t *testing.T)  {
+func TestNewRequest(t *testing.T) {
 	c := NewClient("")
 	inURL, outURL := "users", defaultBaseURL+"users"
 	inBody, outBody := &Employee{Name: "Steffen"}, `{"name":"Steffen"}`+"\n"
@@ -80,4 +80,3 @@ func TestNewRequest_badURL(t *testing.T) {
 		t.Errorf("Expected error to be returned")
 	}
 }
-
