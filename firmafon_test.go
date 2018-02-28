@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"testing"
+	"encoding/json"
 )
 
 const (
@@ -97,6 +98,25 @@ func TestNewRequest_invalidMethod(t *testing.T) {
 	req, err := c.NewRequest("🍆", ".", nil)
 	if err == nil {
 		t.Error("Expected error to be returned")
+	}
+	if req != nil {
+		t.Fatalf("Expected request to be nil")
+	}
+}
+
+func TestNewRequest_invalidJSON(t *testing.T) {
+	c := NewClient("")
+	type MyType struct {
+		Test map[interface{}]interface{}
+	}
+
+	req, err := c.NewRequest("POST", ".", &MyType{})
+
+	if err == nil {
+		t.Error("Expected error to be returned")
+	}
+	if err, ok := err.(*json.UnsupportedTypeError); !ok {
+		t.Errorf("Expected a JSON error; got %#v.", err)
 	}
 	if req != nil {
 		t.Fatalf("Expected request to be nil")
