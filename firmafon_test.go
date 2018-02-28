@@ -91,3 +91,14 @@ func TestNewRequest_emptyBody(t *testing.T) {
 		t.Fatalf("HTTP request contains a non-nil Body")
 	}
 }
+
+func TestNewRequest_invalidMethod(t *testing.T) {
+	c := NewClient("")
+	req, err := c.NewRequest("🍆", ".", nil)
+	if err == nil {
+		t.Error("Expected error to be returned")
+	}
+	if req != nil {
+		t.Fatalf("Expected request to be nil")
+	}
+}
