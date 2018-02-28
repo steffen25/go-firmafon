@@ -80,3 +80,14 @@ func TestNewRequest_badURL(t *testing.T) {
 		t.Errorf("Expected error to be returned")
 	}
 }
+
+func TestNewRequest_emptyBody(t *testing.T) {
+	c := NewClient("")
+	req, err := c.NewRequest("GET", ".", nil)
+	if err != nil {
+		t.Fatalf("NewRequest returned unexpected error: %v", err)
+	}
+	if req.Body != nil {
+		t.Fatalf("HTTP request contains a non-nil Body")
+	}
+}
