@@ -1,6 +1,7 @@
 package firmafon
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -8,7 +9,6 @@ import (
 	"net/url"
 	"os"
 	"testing"
-	"encoding/json"
 )
 
 const (
@@ -115,9 +115,11 @@ func TestNewRequest_invalidJSON(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error to be returned")
 	}
+
 	if err, ok := err.(*json.UnsupportedTypeError); !ok {
 		t.Errorf("Expected a JSON error; got %#v.", err)
 	}
+
 	if req != nil {
 		t.Fatalf("Expected request to be nil")
 	}
