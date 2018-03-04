@@ -8,6 +8,8 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -122,5 +124,55 @@ func TestNewRequest_invalidJSON(t *testing.T) {
 
 	if req != nil {
 		t.Fatalf("Expected request to be nil")
+	}
+}
+
+func TestCheckResponse(t *testing.T) {
+	tests := []struct {
+		res          *http.Response
+		errorMessage string
+		errorStatus  string
+		wantError    bool
+	}{
+		{res: &http.Response{
+			Request:    &http.Request{},
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader(`{"success": true}`)),
+		},
+			wantError: false,
+		},
+		{res: &http.Response{
+			Request:    &http.Request{},
+			StatusCode: http.StatusBadRequest,
+			Body:       ioutil.NopCloser(strings.NewReader(`{"success": false}`)),
+		},
+			wantError: true,
+		},
+		{res: &http.Response{
+			Request:    &http.Request{},
+			StatusCode: http.StatusUnauthorized,
+			Body:       ioutil.NopCloser(strings.NewReader(`{"success": false, "message": "unauthorized", "status": "401 unauthorized"}`)),
+		},
+			wantError:    true,
+			errorMessage: "unauthorized",
+			errorStatus:  "401 unauthorized",
+		},
+	}
+
+	for _, test := range tests {
+		err := CheckResponse(test.res)
+		want := &ErrorResponse{
+			Response: test.res,
+			Message:  test.errorMessage,
+			Status:   test.errorStatus,
+		}
+
+		if err == nil && test.wantError {
+			t.Errorf("Expected error response.")
+		}
+
+		if err != nil && !reflect.DeepEqual(err, want) {
+			t.Errorf("Error = %#v, want %#v", err, want)
+		}
 	}
 }
