@@ -202,3 +202,23 @@ func TestNewResponse(t *testing.T) {
 		}
 	}
 }
+
+func TestSanitizeURL(t *testing.T) {
+	tests := []struct {
+		url, want string
+	}{
+		{"users/1337", "users/1337"},
+		{"users/1337?access_token=secret", "users/1337?access_token=REDACTED"},
+		{"users?id=1&access_token=secret", "users?access_token=REDACTED&id=1"},
+		{":", ":"},
+	}
+
+	for _, test := range tests {
+		inURL, _ := url.Parse(test.url)
+		want, _ := url.Parse(test.want)
+
+		if got := sanitizeURL(inURL); !reflect.DeepEqual(got, want) {
+			t.Errorf("sanitizeURL(%v) returned %v, want %v", test.url, got, want)
+		}
+	}
+}
