@@ -1,6 +1,7 @@
 package firmafon
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -289,5 +290,110 @@ func TestErrorResponse_AuthError(t *testing.T) {
 
 	if !reflect.DeepEqual(err.Error(), want) {
 		t.Errorf("Error = %#v, want %#v", err, want)
+	}
+}
+
+func testMethod(t *testing.T, r *http.Request, want string) {
+	if got := r.Method; got != want {
+		t.Errorf("Request method: %v, want %v", got, want)
+	}
+}
+
+func TestDo(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	type User struct {
+		Name string
+	}
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		fmt.Fprint(w, `{"Name":"John"}`)
+	})
+
+	req, _ := client.NewRequest("GET", ".", nil)
+	body := new(User)
+	client.Do(req, body)
+
+	want := &User{"John"}
+	if !reflect.DeepEqual(body, want) {
+		t.Errorf("Response body = %v, want %v", body, want)
+	}
+}
+
+func TestDo_reqError(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	})
+
+	req := &http.Request{}
+	_, err := client.Do(req, nil)
+
+	if err == nil {
+		t.Fatal("Expected error")
+	}
+}
+
+func TestDo_httpError(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Bad Request", 400)
+	})
+
+	req, _ := client.NewRequest("GET", ".", nil)
+	resp, err := client.Do(req, nil)
+
+	if err == nil {
+		t.Fatal("Expected HTTP 400 error, got no error.")
+	}
+	if resp.StatusCode != 400 {
+		t.Errorf("Expected HTTP 400 error, got %d status code.", resp.StatusCode)
+	}
+}
+
+func TestDo_noContent(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	var body json.RawMessage
+
+	req, _ := client.NewRequest("GET", ".", nil)
+	_, err := client.Do(req, &body)
+	if err != nil {
+		t.Fatalf("Do returned unexpected error: %v", err)
+	}
+}
+
+func TestDo_ioWriter(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "test")
+	})
+
+	var b bytes.Buffer
+
+	req, _ := client.NewRequest("GET", ".", nil)
+	_, err := client.Do(req, &b)
+	got := b.String()
+	want := "test"
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Response body = %v, want %v", got, want)
+	}
+
+	if err != nil {
+		t.Fatalf("Do returned unexpected error: %v", err)
 	}
 }
