@@ -141,7 +141,7 @@ func CheckResponse(r *http.Response) error {
 			json.Unmarshal(data, errorResponse)
 		}
 
-		return errorResponse
+		return (*AuthError)(errorResponse)
 	}
 
 	return errorResponse

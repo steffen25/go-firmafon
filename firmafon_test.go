@@ -148,15 +148,6 @@ func TestCheckResponse(t *testing.T) {
 		},
 			wantError: true,
 		},
-		{res: &http.Response{
-			Request:    &http.Request{},
-			StatusCode: http.StatusUnauthorized,
-			Body:       ioutil.NopCloser(strings.NewReader(`{"success": false, "message": "unauthorized", "status": "401 unauthorized"}`)),
-		},
-			wantError:    true,
-			errorMessage: "unauthorized",
-			errorStatus:  "401 unauthorized",
-		},
 	}
 
 	for _, test := range tests {
@@ -174,6 +165,24 @@ func TestCheckResponse(t *testing.T) {
 		if err != nil && !reflect.DeepEqual(err, want) {
 			t.Errorf("Error = %#v, want %#v", err, want)
 		}
+	}
+}
+
+func TestCheckResponse_AuthError(t *testing.T) {
+	res := &http.Response{
+		Request:    &http.Request{},
+		StatusCode: http.StatusUnauthorized,
+		Body:       ioutil.NopCloser(strings.NewReader(`{"success": false, "message": "unauthorized", "status": "401 unauthorized"}`)),
+	}
+	err := CheckResponse(res).(*AuthError)
+
+	want := &AuthError{
+		Response: res,
+		Message:  "unauthorized",
+		Status:   "401 unauthorized",
+	}
+	if !reflect.DeepEqual(err, want) {
+		t.Errorf("Error = %#v, want %#v", err, want)
 	}
 }
 
@@ -209,6 +218,7 @@ func TestSanitizeURL(t *testing.T) {
 	}{
 		{"users/1337", "users/1337"},
 		{"users/1337?access_token=secret", "users/1337?access_token=REDACTED"},
+		// The Encode call will sort the params therefore since a comes before i it will be the first param
 		{"users?id=1&access_token=secret", "users?access_token=REDACTED&id=1"},
 		{":", ":"},
 	}
@@ -220,5 +230,64 @@ func TestSanitizeURL(t *testing.T) {
 		if got := sanitizeURL(inURL); !reflect.DeepEqual(got, want) {
 			t.Errorf("sanitizeURL(%v) returned %v, want %v", test.url, got, want)
 		}
+	}
+}
+
+func TestErrorResponse_Error(t *testing.T) {
+	tests := []struct {
+		res          *http.Response
+		errorMessage string
+		errorStatus  string
+	}{
+		{res: &http.Response{
+			Request:    &http.Request{},
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader(`{"success": true}`)),
+		},
+		},
+		{res: &http.Response{
+			Request:    &http.Request{},
+			StatusCode: http.StatusBadRequest,
+			Body:       ioutil.NopCloser(strings.NewReader(`{"success": false}`)),
+		},
+		},
+		{res: &http.Response{
+			Request: &http.Request{
+				URL: &url.URL{
+					Scheme:   "https",
+					Host:     "example.com",
+					Path:     "foo/bar",
+					RawQuery: "access_token=secret&id=1",
+				},
+			},
+			StatusCode: http.StatusUnauthorized,
+			Body:       ioutil.NopCloser(strings.NewReader(`{"success": false, "message": "unauthorized", "status": "401 unauthorized"}`)),
+		},
+			errorMessage: "unauthorized",
+			errorStatus:  "401 unauthorized",
+		},
+	}
+
+	for _, test := range tests {
+		err := &ErrorResponse{Response: test.res, Message: test.errorMessage, Status: test.errorStatus}
+		want := fmt.Sprintf("%v %v: %d %v",
+			test.res.Request.Method, sanitizeURL(test.res.Request.URL),
+			test.res.StatusCode, test.errorMessage)
+
+		if !reflect.DeepEqual(err.Error(), want) {
+			t.Errorf("Error = %#v, want %#v", err, want)
+		}
+	}
+}
+
+func TestErrorResponse_AuthError(t *testing.T) {
+	res := &http.Response{Request: &http.Request{}}
+	err := &AuthError{Response: res, Message: "unauthorized", Status: "401 unauthorized"}
+	want := fmt.Sprintf("%v %v: %d %v",
+		res.Request.Method, sanitizeURL(res.Request.URL),
+		res.StatusCode, err.Message)
+
+	if !reflect.DeepEqual(err.Error(), want) {
+		t.Errorf("Error = %#v, want %#v", err, want)
 	}
 }
