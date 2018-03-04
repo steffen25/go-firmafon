@@ -176,3 +176,29 @@ func TestCheckResponse(t *testing.T) {
 		}
 	}
 }
+
+func TestNewResponse(t *testing.T) {
+	tests := []struct {
+		res *http.Response
+	}{
+		{res: &http.Response{
+			Request:    &http.Request{},
+			StatusCode: http.StatusOK,
+			Body:       nil,
+		},
+		},
+		{res: &http.Response{
+			Request:    &http.Request{},
+			StatusCode: http.StatusBadRequest,
+			Body:       ioutil.NopCloser(strings.NewReader(`{"success": false}`)),
+		},
+		},
+	}
+
+	for _, test := range tests {
+		want := newResponse(test.res)
+		if !reflect.DeepEqual(test.res, want.Response) {
+			t.Errorf("Error = %#v, want %#v", test.res, want.Response)
+		}
+	}
+}
