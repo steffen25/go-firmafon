@@ -3,6 +3,7 @@ package firmafon
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"reflect"
 	"testing"
 )
@@ -28,9 +29,28 @@ func TestEmployeesService_All(t *testing.T) {
 	}
 }
 
-func TestEmployeesService_All_InvalidJSON(t *testing.T) {
+func TestEmployeesService_All_InvalidURL(t *testing.T) {
 	client, mux, _, teardown := setup()
 	defer teardown()
+
+	mux.HandleFunc(":", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeJSON)
+		fmt.Fprint(w, `{"employees":[{"id": 1}, {"id": 2}]}`)
+	})
+
+	_, _, err := client.Employees.All()
+	if err == nil {
+		t.Error("Get all employees expected error to be returned but gone none")
+	}
+}
+
+func TestEmployeesService_All_InvalidRequest(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	baseURL, _ := url.Parse("https://app.firmafon.dk/api/v2")
+	client.BaseURL = baseURL
 
 	mux.HandleFunc(":", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "GET")
@@ -81,6 +101,25 @@ func TestEmployeesService_GetById_InvalidURL(t *testing.T) {
 	}
 }
 
+func TestEmployeesService_GetById_InvalidRequest(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	baseURL, _ := url.Parse("https://app.firmafon.dk/api/v2")
+	client.BaseURL = baseURL
+
+	mux.HandleFunc(":", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeJSON)
+		fmt.Fprint(w, `{"employee":{"id": 1}}`)
+	})
+
+	_, _, err := client.Employees.GetById(1)
+	if err == nil {
+		t.Error("Get employee by id expected error to be returned but gone none")
+	}
+}
+
 func TestEmployeesService_Update(t *testing.T) {
 	client, mux, _, teardown := setup()
 	defer teardown()
@@ -109,6 +148,27 @@ func TestEmployeesService_Update_InvalidURL(t *testing.T) {
 	defer teardown()
 
 	mux.HandleFunc(":", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "PUT")
+		testHeader(t, r, "Accept", mediaTypeJSON)
+		fmt.Fprint(w, `{"employee":{"id": 1, "name": "Steffen"}}`)
+	})
+	emp := &Employee{ID: 1, Name: "John"}
+	emp.Name = "Steffen"
+
+	_, _, err := client.Employees.Update(emp)
+	if err == nil {
+		t.Error("Update employee expected error to be returned but gone none")
+	}
+}
+
+func TestEmployeesService_Update_InvalidRequest(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	baseURL, _ := url.Parse("https://app.firmafon.dk/api/v2")
+	client.BaseURL = baseURL
+
+	mux.HandleFunc("/employees/1", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "PUT")
 		testHeader(t, r, "Accept", mediaTypeJSON)
 		fmt.Fprint(w, `{"employee":{"id": 1, "name": "Steffen"}}`)
