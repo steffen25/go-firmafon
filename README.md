@@ -7,4 +7,4 @@ Go library for accessing the Firmafon API
 ### TODOs
 
 - [x] Setup CI
-- [ ] Add Tests
+- [x] Add Tests
