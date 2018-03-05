@@ -34,6 +34,7 @@ type firmafonEmployee struct {
 	Employee *Employee `json:"employee"`
 }
 
+// All returns a slice of all employees
 func (s *EmployeesService) All() ([]*Employee, *Response, error) {
 	url := "employees"
 	req, err := s.client.NewRequest("GET", url, nil)
@@ -50,6 +51,7 @@ func (s *EmployeesService) All() ([]*Employee, *Response, error) {
 	return emps.Employees, resp, nil
 }
 
+// GetById returns the employee with the specified ID
 func (s *EmployeesService) GetById(id int) (*Employee, *Response, error) {
 	url := fmt.Sprintf("employees/%d", id)
 	req, err := s.client.NewRequest("GET", url, nil)
@@ -66,10 +68,28 @@ func (s *EmployeesService) GetById(id int) (*Employee, *Response, error) {
 	return e.Employee, resp, nil
 }
 
+// Update Updates an employee by ID. Only administrators can update other employees.
 func (s *EmployeesService) Update(e *Employee) (*Employee, *Response, error) {
 	url := fmt.Sprintf("employees/%d", e.ID)
 	em := firmafonEmployee{e}
 	req, err := s.client.NewRequest("PUT", url, em)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	emp := new(firmafonEmployee)
+	resp, err := s.client.Do(req, &emp)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return emp.Employee, resp, nil
+}
+
+// Authenticated returns the currently authenticated employee.
+func (s *EmployeesService) Authenticated() (*Employee, *Response, error) {
+	url := "employee"
+	req, err := s.client.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -181,3 +181,59 @@ func TestEmployeesService_Update_InvalidRequest(t *testing.T) {
 		t.Error("Update employee expected error to be returned but gone none")
 	}
 }
+
+func TestEmployeesService_Authenticated(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/employee", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeJSON)
+		fmt.Fprint(w, `{"employee":{"id": 1, "name": "John"}}`)
+	})
+
+	emp, _, err := client.Employees.Authenticated()
+	if err != nil {
+		t.Errorf("Update employee returned error: %v", err)
+	}
+
+	want := &Employee{ID: 1, Name: "John"}
+	if !reflect.DeepEqual(emp, want) {
+		t.Errorf("Get authenticated employee returned %+v, want %+v", emp, want)
+	}
+}
+
+func TestEmployeesService_Authenticated_InvalidURL(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc(":", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeJSON)
+		fmt.Fprint(w, `{"employee":{"id": 1, "name": "John"}}`)
+	})
+
+	_, _, err := client.Employees.Authenticated()
+	if err == nil {
+		t.Error("Get authenticated employee expected error to be returned but gone none")
+	}
+}
+
+func TestEmployeesService_Authenticated_InvalidRequest(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	baseURL, _ := url.Parse("https://app.firmafon.dk/api/v2")
+	client.BaseURL = baseURL
+
+	mux.HandleFunc("/employee", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeJSON)
+		fmt.Fprint(w, `{"employee":{"id": 1, "name": "John"}}`)
+	})
+
+	_, _, err := client.Employees.Authenticated()
+	if err == nil {
+		t.Error("Get authenticated employee expected error to be returned but gone none")
+	}
+}
