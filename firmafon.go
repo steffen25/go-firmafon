@@ -120,6 +120,7 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 	}
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.AccessToken))
+	req.Header.Set("Accept", "application/json")
 
 	if body != nil {
 		req.Header.Set("Content-Type", mediaTypeJSON)
