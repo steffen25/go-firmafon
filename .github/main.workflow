@@ -1,6 +1,6 @@
 workflow "New workflow" {
   on = "push"
-  resolves = ["Call httpbin"]
+  resolves = ["go"]
 }
 
 action "Call httpbin" {
@@ -8,6 +8,8 @@ action "Call httpbin" {
   args = ["POST", "httpbin.org/anything", "hello=world"]
 }
 
-action "my action" {
-  uses = "./my-action/"
+action "go" {
+  uses = "go"
+  needs = ["Call httpbin"]
+  args = "test"
 }
