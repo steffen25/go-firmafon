@@ -8,8 +8,8 @@ action "Call httpbin" {
   args = ["POST", "httpbin.org/anything", "hello=world"]
 }
 
-action "go" {
-  uses = "go"
+action "my action" {
+  uses = "./my-action/"
   needs = ["Call httpbin"]
   args = "test"
 }
