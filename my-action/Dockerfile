@@ -1,0 +1,14 @@
+FROM golang:1.11.5
+
+LABEL version="1.0.0"
+LABEL repository="http://github.com/actions/go"
+LABEL homepage="http://github.com/actions/go"
+LABEL maintainer="GitHub Actions <support+actions@github.com>"
+
+LABEL com.github.actions.name="GitHub Action for Go"
+LABEL com.github.actions.description="Go wrapper"
+LABEL com.github.actions.icon="package"
+LABEL com.github.actions.color="blue"
+
+ADD entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
