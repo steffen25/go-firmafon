@@ -1,6 +1,6 @@
 workflow "New workflow" {
   on = "push"
-  resolves = ["HTTP client"]
+  resolves = ["Call httpbin"]
 }
 
 action "Call httpbin" {
