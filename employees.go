@@ -34,6 +34,20 @@ type firmafonEmployee struct {
 	Employee *Employee `json:"employee"`
 }
 
+type firmafonSMS struct {
+	Message struct {
+		*firmafonSMSBody
+	} `json:"message"`
+}
+
+type firmafonSMSBody struct {
+	Body string `json:"body"`
+}
+
+type firmafonSMSResponse struct {
+	Sent int `json:"sent"`
+}
+
 // All returns a slice of all employees
 func (s *EmployeesService) All() ([]*Employee, *Response, error) {
 	url := "employees"
@@ -101,4 +115,28 @@ func (s *EmployeesService) Authenticated() (*Employee, *Response, error) {
 	}
 
 	return emp.Employee, resp, nil
+}
+
+// Send an SMS message to the given employee.
+// The sender will be shown as either the authenticated employee’s number or name.
+// Beware these are cheap, but not free see https://www.firmafon.dk/prisliste
+// This feature is not available for companies in trial.
+func (s *EmployeesService) SendSMS(e *Employee, msg string) (*firmafonSMSResponse, *Response, error) {
+	url := fmt.Sprintf("employees/%d/message", e.ID)
+
+	body := &firmafonSMSBody{Body: msg}
+	m := &firmafonSMS{Message: struct{ *firmafonSMSBody }{body}}
+
+	req, err := s.client.NewRequest("POST", url, m)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	data := &firmafonSMSResponse{}
+	resp, err := s.client.Do(req, &data)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return data, resp, nil
 }

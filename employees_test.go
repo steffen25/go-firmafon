@@ -237,3 +237,63 @@ func TestEmployeesService_Authenticated_InvalidRequest(t *testing.T) {
 		t.Error("Get authenticated employee expected error to be returned but gone none")
 	}
 }
+
+func TestEmployeesService_SendSMS(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/employees/1/message", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testHeader(t, r, "Accept", mediaTypeJSON)
+		fmt.Fprint(w, `{"sent": 1}`)
+	})
+
+	emp := &Employee{ID: 1, Name: "John Doe"}
+
+	data, _, err := client.Employees.SendSMS(emp, "Hello, world.")
+	if err != nil {
+		t.Errorf("Update employee expected error to be returned but gone none %v", err)
+	}
+	if data.Sent != 1 {
+		t.Errorf("SendSMS response expected sent to be 1 but got %v", data.Sent)
+	}
+}
+
+func TestEmployeesService_SendSMS_Invalid_Request(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	baseURL, _ := url.Parse("https://app.firmafon.dk/api/v2")
+	client.BaseURL = baseURL
+
+	mux.HandleFunc("/employees/1/message", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testHeader(t, r, "Accept", mediaTypeJSON)
+		fmt.Fprint(w, `{"sent": 1}`)
+	})
+
+	emp := &Employee{ID: 1, Name: "John Doe"}
+
+	_, _, err := client.Employees.SendSMS(emp, "Hello, world.")
+	if err == nil {
+		t.Error("SendSMS expected error to be returned but gone none")
+	}
+}
+
+func TestEmployeesService_SendSMS_Invalid_URL(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc(":", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testHeader(t, r, "Accept", mediaTypeJSON)
+		fmt.Fprint(w, `{"sent": 1}`)
+	})
+
+	emp := &Employee{ID: 1, Name: "John Doe"}
+
+	_, _, err := client.Employees.SendSMS(emp, "Hello, world.")
+	if err == nil {
+		t.Error("SendSMS expected error to be returned but gone none")
+	}
+}
