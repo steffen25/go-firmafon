@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/google/go-querystring/query"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 )
 
@@ -27,10 +29,23 @@ type Client struct {
 
 	// Services used for talking to different parts of the Firmafon API
 	Employees *EmployeesService
+	Calls     *CallService
 }
 
 type service struct {
 	client *Client
+}
+
+type CallsListOptions struct {
+	Endpoint        string `url:"endpoint"`
+	Direction       string `url:"direction"`
+	Status          string `url:"status"`
+	Number          string `url:"number"`
+	Limit           string `url:"limit"`
+	StartedAtGtOrEq string `url:"started_at_gt_or_eq"`
+	StartedAtLtOrEq string `url:"started_at_lt_or_eq"`
+	EndedAtGtOrEq   string `url:"ended_at_gt_or_eq"`
+	EndedAtLtOrEq   string `url:"ended_at_lt_or_eq"`
 }
 
 type Response struct {
@@ -59,8 +74,35 @@ func NewClient(token string) *Client {
 	c := &Client{client: httpClient, BaseURL: baseURL, AccessToken: token}
 	c.common.client = c
 	c.Employees = (*EmployeesService)(&c.common)
+	callSrv := &CallService{
+		service:  &c.common,
+		Endpoint: "calls",
+	}
+	c.Calls = callSrv
 
 	return c
+}
+
+// addOptions adds the parameters in opt as URL query parameters to s. opt
+// must be a struct whose fields may contain "url" tags.
+func addOptions(s string, opt interface{}) (string, error) {
+	v := reflect.ValueOf(opt)
+	if v.Kind() == reflect.Ptr && v.IsNil() {
+		return s, nil
+	}
+
+	u, err := url.Parse(s)
+	if err != nil {
+		return s, err
+	}
+
+	qs, err := query.Values(opt)
+	if err != nil {
+		return s, err
+	}
+
+	u.RawQuery = qs.Encode()
+	return u.String(), nil
 }
 
 func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
