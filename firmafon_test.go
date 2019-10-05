@@ -403,3 +403,19 @@ func TestDo_ioWriter(t *testing.T) {
 		t.Fatalf("Do returned unexpected error: %v", err)
 	}
 }
+
+func TestAddOptions_Parse(t *testing.T) {
+	_, err := addOptions(":", nil)
+	if err == nil {
+		t.Fatal("Addoptions Parse did not return an error")
+	}
+}
+
+func TestAddOptions_Values(t *testing.T) {
+	type test interface{}
+	var tester test
+	_, err := addOptions("/", &tester)
+	if err == nil {
+		t.Fatal("Addoptions Values did not return an error")
+	}
+}
