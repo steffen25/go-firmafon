@@ -2,9 +2,7 @@ package firmafon
 
 import "time"
 
-type CallsService service
-
-type CallService struct {
+type CallsService struct {
 	*service
 	Endpoint string
 }
@@ -43,7 +41,7 @@ type firmafonCalls struct {
 }
 
 // GetAll returns a slice of calls to or from one or more numbers
-func (s *CallService) GetAll(opt *CallsListOptions) ([]*Call, *Response, error) {
+func (s *CallsService) GetAll(opt *CallsListOptions) ([]*Call, *Response, error) {
 	url, err := addOptions(s.Endpoint, opt)
 	if err != nil {
 		return nil, nil, err

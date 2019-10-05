@@ -29,7 +29,7 @@ type Client struct {
 
 	// Services used for talking to different parts of the Firmafon API
 	Employees *EmployeesService
-	Calls     *CallService
+	Calls     *CallsService
 }
 
 type service struct {
@@ -74,7 +74,7 @@ func NewClient(token string) *Client {
 	c := &Client{client: httpClient, BaseURL: baseURL, AccessToken: token}
 	c.common.client = c
 	c.Employees = (*EmployeesService)(&c.common)
-	callSrv := &CallService{
+	callSrv := &CallsService{
 		service:  &c.common,
 		Endpoint: "calls",
 	}
