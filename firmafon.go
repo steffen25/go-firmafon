@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/google/go-querystring/query"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strings"
+
+	"github.com/google/go-querystring/query"
 )
 
 const (
@@ -124,7 +125,10 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body)
+			_, err = io.Copy(w, resp.Body)
+			if err != nil {
+				return nil, err
+			}
 		} else {
 			err = json.NewDecoder(resp.Body).Decode(v)
 			if err == io.EOF {
@@ -181,7 +185,10 @@ func CheckResponse(r *http.Response) error {
 	if r.StatusCode == 401 {
 		data, err := ioutil.ReadAll(r.Body)
 		if err == nil && data != nil {
-			json.Unmarshal(data, errorResponse)
+			err := json.Unmarshal(data, errorResponse)
+			if err != nil {
+				return err
+			}
 		}
 
 		return (*AuthError)(errorResponse)

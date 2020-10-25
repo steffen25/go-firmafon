@@ -1,7 +1,8 @@
 # go-firmafon
 Go library for accessing the Firmafon API.
 
-[![Build Status](https://travis-ci.org/steffen25/go-firmafon.svg?branch=master)](https://travis-ci.org/steffen25/go-firmafon)
+[![Build Status](https://github.com/steffen25/go-firmafon/workflows/golangci-lint/badge.svg)](https://github.com/steffen25/go-firmafon/actions?query=workflow%3Agolangci-lint)
+[![Test suite Status](https://github.com/steffen25/go-firmafon/workflows/test-suite/badge.svg)](https://github.com/steffen25/go-firmafon/actions?query=workflow%3Atest-suite)
 [![Go Report Card](https://goreportcard.com/badge/github.com/steffen25/go-firmafon)](https://goreportcard.com/report/github.com/steffen25/go-firmafon)
 [![codecov](https://codecov.io/gh/steffen25/go-firmafon/branch/master/graph/badge.svg)](https://codecov.io/gh/steffen25/go-firmafon)
 
@@ -33,4 +34,38 @@ if err != nil {
 for _, u := range users {
 	fmt.Println(u.Name)
 }
+```
+
+### Phone calls
+
+Get a list of calls to or from one or more numbers.
+
+#### Get all
+```go
+client := firmafon.NewClient("token")
+
+// List all calls to and from all numbers
+calls, _, err := client.Calls.GetAll()
+if err != nil {
+	// Handle error
+}
+
+// print each call's UUID
+for _, c := range calls {
+	fmt.Println(c.CallUUID)
+}
+```
+
+#### Get a single call by UUID
+```go
+client := firmafon.NewClient("token")
+
+// List all calls to and from all numbers
+call, _, err := client.Calls.Get("UUID_HERE")
+if err != nil {
+	// Handle error
+}
+
+// print call UUID
+fmt.Println(call.CallUUID)
 ```
