@@ -370,3 +370,86 @@ func TestCallsService_Get(t *testing.T) {
 		t.Errorf("Get call returned %+v, want %+v", call, want)
 	}
 }
+func TestCallsService_Get_Invalid_Request(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	baseURL, _ := url.Parse("https://app.firmafon.dk/api/v2")
+	client.BaseURL = baseURL
+
+	mux.HandleFunc("/calls/e54f5820-386d-0132-5bc3-14dae9edd21d", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeJSON)
+		fmt.Fprint(w, `{
+		  "call": {
+			  "call_uuid": "e54f5820-386d-0132-5bc3-14dae9edd21d",
+			  "company_id": 1,
+			  "endpoint": "Reception#1",
+			  "from_number": "4512345678",
+			  "to_number": "4571999999",
+			  "from_contact": {
+				"id": 1,
+				"number": "4512345678",
+				"name": "Kim Kontakt",
+				"email": "kimkontakt@example.com"
+			  },
+			  "to_contact": null,
+			  "direction": "incoming",
+			  "started_at": "2014-03-21T13:59:04Z",
+			  "answered_at": "2014-03-21T13:59:07Z",
+			  "answered_by": {
+				"id": 2,
+				"name": "Karsten Kollega",
+				"number": "4587654321"
+			  },
+			  "ended_at": "2014-03-21T13:59:59Z",
+			  "status": "answered"
+			}
+		}`)
+	})
+
+	_, _, err := client.Calls.Get("e54f5820-386d-0132-5bc3-14dae9edd21d")
+	if err == nil {
+		t.Error("Get all calls expected an error but got none")
+	}
+}
+func TestCallsService_Get_Invalid_URL(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc(":", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeJSON)
+		fmt.Fprint(w, `{
+		  "call": {
+			  "call_uuid": "e54f5820-386d-0132-5bc3-14dae9edd21d",
+			  "company_id": 1,
+			  "endpoint": "Reception#1",
+			  "from_number": "4512345678",
+			  "to_number": "4571999999",
+			  "from_contact": {
+				"id": 1,
+				"number": "4512345678",
+				"name": "Kim Kontakt",
+				"email": "kimkontakt@example.com"
+			  },
+			  "to_contact": null,
+			  "direction": "incoming",
+			  "started_at": "2014-03-21T13:59:04Z",
+			  "answered_at": "2014-03-21T13:59:07Z",
+			  "answered_by": {
+				"id": 2,
+				"name": "Karsten Kollega",
+				"number": "4587654321"
+			  },
+			  "ended_at": "2014-03-21T13:59:59Z",
+			  "status": "answered"
+			}
+		}`)
+	})
+
+	_, _, err := client.Calls.Get("e54f5820-386d-0132-5bc3-14dae9edd21d")
+	if err == nil {
+		t.Error("Get all calls expected an error but got none")
+	}
+}

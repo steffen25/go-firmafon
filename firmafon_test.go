@@ -187,6 +187,18 @@ func TestCheckResponse_AuthError(t *testing.T) {
 	}
 }
 
+func TestCheckResponse_AuthError_Invalid_JSON(t *testing.T) {
+	res := &http.Response{
+		Request:    &http.Request{},
+		StatusCode: http.StatusUnauthorized,
+		Body:       ioutil.NopCloser(strings.NewReader(`""`)),
+	}
+	err := CheckResponse(res)
+	if err == nil {
+		t.Error("CheckResponse expected an error but got none")
+	}
+}
+
 func TestNewResponse(t *testing.T) {
 	tests := []struct {
 		res *http.Response
@@ -404,6 +416,24 @@ func TestDo_ioWriter(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("Do returned unexpected error: %v", err)
+	}
+}
+
+func TestDo_ioWriter_Copy_Error(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", "1") // lie about the content length to trigger an error when trying to read the 1 byte body
+	})
+
+	var b bytes.Buffer
+
+	req, _ := client.NewRequest("GET", ".", nil)
+	_, err := client.Do(req, &b)
+
+	if err == nil {
+		t.Fatal("Do expected to return an error but got none", err)
 	}
 }
 
