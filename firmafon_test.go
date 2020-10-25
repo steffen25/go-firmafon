@@ -320,7 +320,10 @@ func TestDo(t *testing.T) {
 
 	req, _ := client.NewRequest("GET", ".", nil)
 	body := new(User)
-	client.Do(req, body)
+	_, err := client.Do(req, body)
+	if err != nil {
+		t.Errorf("could not send request %v", err)
+	}
 
 	want := &User{"John"}
 	if !reflect.DeepEqual(body, want) {

@@ -52,14 +52,14 @@ func TestCallsService_All(t *testing.T) {
 	}
 
 	layout := time.RFC3339
-	started_str := "2014-03-21T13:59:04Z"
-	started, err := time.Parse(layout, started_str)
+	startedStr := "2014-03-21T13:59:04Z"
+	started, _ := time.Parse(layout, startedStr)
 
 	answeredStr := "2014-03-21T13:59:07Z"
-	answered, err := time.Parse(layout, answeredStr)
+	answered, _ := time.Parse(layout, answeredStr)
 
 	endedStr := "2014-03-21T13:59:59Z"
-	ended, err := time.Parse(layout, endedStr)
+	ended, _ := time.Parse(layout, endedStr)
 
 	call := &Call{
 		CallUUID:   "e54f5820-386d-0132-5bc3-14dae9edd21d",
