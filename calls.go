@@ -1,6 +1,9 @@
 package firmafon
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type CallsService struct {
 	*service
@@ -40,6 +43,10 @@ type firmafonCalls struct {
 	Calls []*Call `json:"calls"`
 }
 
+type firmafonCall struct {
+	Call *Call `json:"call"`
+}
+
 // GetAll returns a slice of calls to or from one or more numbers
 func (s *CallsService) GetAll(opt *CallsListOptions) ([]*Call, *Response, error) {
 	url, err := addOptions(s.Endpoint, opt)
@@ -57,4 +64,19 @@ func (s *CallsService) GetAll(opt *CallsListOptions) ([]*Call, *Response, error)
 	}
 
 	return calls.Calls, resp, nil
+}
+
+func (s *CallsService) Get(uuid string) (*Call, *Response, error) {
+	url := s.Endpoint + fmt.Sprintf("/%s", uuid)
+	req, err := s.client.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	call := &firmafonCall{}
+	resp, err := s.client.Do(req, &call)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return call.Call, resp, nil
 }

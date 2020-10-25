@@ -35,3 +35,37 @@ for _, u := range users {
 	fmt.Println(u.Name)
 }
 ```
+
+### Phone calls
+
+Get a list of calls to or from one or more numbers.
+
+#### Get all
+```go
+client := firmafon.NewClient("token")
+
+// List all calls to and from all numbers
+calls, _, err := client.Calls.GetAll()
+if err != nil {
+	// Handle error
+}
+
+// print each call's UUID
+for _, c := range calls {
+	fmt.Println(c.CallUUID)
+}
+```
+
+#### Get a single call by UUID
+```go
+client := firmafon.NewClient("token")
+
+// List all calls to and from all numbers
+call, _, err := client.Calls.Get("UUID_HERE")
+if err != nil {
+	// Handle error
+}
+
+// print call UUID
+fmt.Println(call.CallUUID)
+```
